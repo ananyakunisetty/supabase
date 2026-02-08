@@ -454,13 +454,30 @@ export async function deleteFolder(id: string): Promise<void> {
   }
 
   const folderPath = path.join(SNIPPETS_DIR, folder.name)
+
+  // Move contained snippets to root to preserve them
+  const snippetsInFolder = entries.filter(
+    (entry) => entry.type === 'file' && entry.folderId === folder.id
+  )
+
+  for (const snippet of snippetsInFolder) {
+    const oldPath = path.join(folderPath, `${snippet.name}.sql`)
+    const newPath = path.join(SNIPPETS_DIR, `${snippet.name}.sql`)
+    try {
+      await fs.rename(oldPath, newPath)
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error
+      }
+    }
+  }
+
   try {
     await fs.rm(folderPath, { recursive: true, force: true })
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
       throw error
     }
-    // If folder doesn't exist, still throw the original error
     throw new Error(`Folder with id ${id} not found`)
   }
 }
