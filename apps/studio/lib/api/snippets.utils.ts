@@ -396,8 +396,17 @@ export async function updateSnippet(id: string, updates: DeepPartial<Snippet>): 
     foundSnippet.createdAt
   )
 
-  // it's easier to delete the old file first and then recreate a new one
+  // Delete the old file first
   await deleteSnippet(snippet.id)
+
+  // Verify deletion and check for conflicts at target location
+  const currentEntries = await getFilesystemEntries()
+  const conflictingEntry = currentEntries.find(
+    (entry) => entry.type === 'file' && entry.name === (updates.name ?? snippet.name) && entry.folderId === (updates.folder_id !== undefined ? updates.folder_id : snippet.folder_id)
+  )
+  if (conflictingEntry) {
+    throw new Error(`Cannot rename: a snippet named "${updates.name ?? snippet.name}" was created while updating`)
+  }
 
   const updatedSnippet = await saveSnippet({
     name: updates.name ?? snippet.name,
