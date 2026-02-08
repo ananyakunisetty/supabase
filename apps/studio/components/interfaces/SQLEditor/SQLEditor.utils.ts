@@ -50,7 +50,9 @@ export const createSqlSnippetSkeletonV2 = ({
 
 export function checkDestructiveQuery(sql: string) {
   const cleanedSql = removeCommentsFromSql(sql)
-  return destructiveSqlRegex.some((regex) => regex.test(cleanedSql))
+  // Also check for multi-statement destructive queries
+  const statements = cleanedSql.split(';').map(s => s.trim()).filter(Boolean)
+  return statements.some(stmt => destructiveSqlRegex.some((regex) => regex.test(stmt)))
 }
 
 // Function to check for UPDATE queries without WHERE clause
@@ -60,6 +62,7 @@ export function isUpdateWithoutWhere(sql: string): boolean {
   const updateStatements = sql
     .split(';')
     .filter((statement) => statement.trim().toLowerCase().startsWith('update'))
+    .filter((statement) => !statement.trim().toLowerCase().includes('with '))
   return updateStatements.some(
     (statement) => updateWithoutWhereRegex.test(statement) && !/where\s/i.test(statement)
   )
