@@ -5,11 +5,12 @@ import { executeQuery } from './query'
 interface GetLintsOptions {
   headers?: HeadersInit
   exposedSchemas?: string
+  customSearchPath?: string
 }
 
-export async function getLints({ headers, exposedSchemas }: GetLintsOptions) {
+export async function getLints({ headers, exposedSchemas, customSearchPath }: GetLintsOptions) {
   return await executeQuery<ResponseData[number]>({
-    query: enrichLintsQuery(LINT_SQL, exposedSchemas),
+    query: enrichLintsQuery(LINT_SQL, exposedSchemas, customSearchPath),
     headers,
   })
 }
@@ -17,10 +18,11 @@ export async function getLints({ headers, exposedSchemas }: GetLintsOptions) {
 export type ResponseData =
   paths['/platform/projects/{ref}/run-lints']['get']['responses']['200']['content']['application/json']
 
-export const enrichLintsQuery = (query: string, exposedSchemas?: string) => {
+export const enrichLintsQuery = (query: string, exposedSchemas?: string, customSearchPath?: string) => {
   return `
 set pg_stat_statements.track = none;
 ${!!exposedSchemas ? `set local pgrst.db_schemas = '${exposedSchemas}';` : ''}
+${!!customSearchPath ? `set local search_path = '${customSearchPath}';` : ''}
 -- source: dashboard
 -- user: ${'self host'}
 -- date: ${new Date().toISOString()}
