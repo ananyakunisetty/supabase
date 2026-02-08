@@ -100,12 +100,16 @@ export const processParameterizedSql = (sql: string, parameters: Record<string, 
   // Remove @set lines from SQL
   let processedSql = sql.replace(/@set\s+\w+(?:\s*:\s*[^=]+)?\s*=\s*[^;\n]+[\n;]*/g, '')
 
-  // Replace :parameters with values
+  // Replace :parameters with values, applying type casts where specified
   const paramRegex = /:(\w+)/g
   processedSql = processedSql.replace(paramRegex, (match, paramName) => {
     const value = parameters[paramName] ?? paramDefaults[paramName]?.value
     if (value === undefined) {
       throw new Error(`Missing value for parameter: ${paramName}`)
+    }
+    const typeCast = paramDefaults[paramName]?.type
+    if (typeCast && typeCast !== 'enum') {
+      return `${value}::${typeCast}`
     }
     return value
   })
