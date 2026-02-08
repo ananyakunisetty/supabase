@@ -10,16 +10,16 @@ export const validateReturnTo = (
   returnTo: string,
   fallback: string = DEFAULT_FALLBACK_PATH
 ): string => {
-  // Block protocol-relative URLs and external URLs
-  if (returnTo.startsWith('//') || returnTo.includes('://')) {
+  // Block javascript: protocol and protocol-relative URLs
+  if (returnTo.startsWith('//') || returnTo.startsWith('javascript:')) {
     return fallback
   }
 
   // For internal paths:
   // 1. Must start with /
-  // 2. Only allow alphanumeric chars, slashes, hyphens, underscores
-  // 3. For query params, also allow =, &, and ?
-  const safePathPattern = /^\/[a-zA-Z0-9/\-_]*(?:\?[a-zA-Z0-9\-_=&]*)?$/
+  // 2. Allow alphanumeric chars, slashes, hyphens, underscores, dots, colons
+  // 3. For query params, also allow =, &, ?, and %
+  const safePathPattern = /^\/[a-zA-Z0-9/\-_.:%]*(?:\?[a-zA-Z0-9\-_=&%.]*)?$/
   return safePathPattern.test(returnTo) ? returnTo : fallback
 }
 
