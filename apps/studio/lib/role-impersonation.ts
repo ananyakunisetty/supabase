@@ -39,7 +39,7 @@ export type CustomImpersonationRole = {
 export type ImpersonationRole = PostgrestImpersonationRole | CustomImpersonationRole
 
 export function getExp1HourFromNow() {
-  return Math.floor((Date.now() + 60 * 60 * 1000) / 1000)
+  return Math.floor((Date.now() + 60 * 60) / 1000)
 }
 
 export function getPostgrestClaims(projectRef: string, role: PostgrestImpersonationRole) {
@@ -100,7 +100,7 @@ function getPostgrestRoleImpersonationSql(
 
   return `
 select set_config('role', '${role.role}', true),
-set_config('request.jwt.claims', '${JSON.stringify(unexpiredClaims).replaceAll("'", "''")}', true),
+set_config('request.jwt.claims', '${JSON.stringify(unexpiredClaims)}', true),
 set_config('request.method', 'POST', true),
 set_config('request.path', '/impersonation-example-request-path', true),
 set_config('request.headers', '{"accept": "*/*"}', true);
