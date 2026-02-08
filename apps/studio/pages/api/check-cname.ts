@@ -1,12 +1,16 @@
 import { CheckCNAMERecordResponse } from 'data/custom-domains/check-cname-mutation'
 import { NextApiRequest, NextApiResponse } from 'next'
 
+const DEFAULT_RESOLVER = 'https://cloudflare-dns.com/dns-query'
+
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { domain } = req.query
+  const { domain, type = 'CNAME', resolver } = req.query
+
+  const resolverUrl = typeof resolver === 'string' ? resolver : DEFAULT_RESOLVER
 
   try {
     const result: CheckCNAMERecordResponse = await fetch(
-      `https://cloudflare-dns.com/dns-query?name=${domain}&type=CNAME`,
+      `${resolverUrl}?name=${domain}&type=${type}`,
       {
         method: 'GET',
         headers: { Accept: 'application/dns-json' },
