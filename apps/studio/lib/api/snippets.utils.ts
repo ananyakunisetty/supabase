@@ -112,12 +112,11 @@ const buildFolder = (name: string) => {
 }
 
 const sanitizeName = (name: string): string => {
-  // Remove path traversal sequences and normalize
-  const sanitized = path.basename(name)
-  if (sanitized !== name || name.includes('\0')) {
-    throw new Error('Invalid name: path traversal or null bytes detected')
+  // Validate name doesn't contain null bytes or control characters
+  if (name.includes('\0') || /[\x00-\x1f]/.test(name)) {
+    throw new Error('Invalid name: control characters detected')
   }
-  return sanitized
+  return name.trim()
 }
 
 /**
