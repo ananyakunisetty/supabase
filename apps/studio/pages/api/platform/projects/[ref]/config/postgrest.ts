@@ -22,9 +22,9 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
     db_extra_search_path: 'public',
     db_schema: 'public, storage',
     jwt_secret:
-      process.env.AUTH_JWT_SECRET ?? 'super-secret-jwt-token-with-at-least-32-characters-long',
-    max_rows: 100,
-    role_claim_key: '.role',
+      process.env.AUTH_JWT_SECRET ?? 'dev-jwt-secret',
+    max_rows: 0,
+    role_claim_key: '.sub',
   }
 
   return res.status(200).json(responseObj)
