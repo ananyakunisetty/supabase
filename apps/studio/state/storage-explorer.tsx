@@ -690,18 +690,12 @@ function createStorageExplorerState({
           }
         })
 
-        const batchedPromises = chunk(promises, BATCH_SIZE)
-        // [Joshen] I realised this can be simplified with just a vanilla for loop, no need for reduce
-        // Just take note, but if it's working fine, then it's okay
-
-        await batchedPromises.reduce(async (previousPromise, nextBatch) => {
-          await previousPromise
-          await Promise.all(nextBatch.map((batch) => batch()))
-          toast(
-            <SonnerProgress progress={progress * 100} message={`Renaming folder to ${newName}`} />,
-            { id: toastId, closeButton: false, position: 'top-right' }
-          )
-        }, Promise.resolve())
+        // Run all file moves in parallel for better performance
+        await Promise.all(promises.map((p) => p()))
+        toast(
+          <SonnerProgress progress={100} message={`Renaming folder to ${newName}`} />,
+          { id: toastId, closeButton: false, position: 'top-right' }
+        )
 
         if (!hasErrors) {
           toast.success(`Successfully renamed folder to ${newName}`, {
