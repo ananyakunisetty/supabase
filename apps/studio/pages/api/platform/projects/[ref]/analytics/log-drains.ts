@@ -59,9 +59,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       const postResult = await fetch(postUrl, {
         body: JSON.stringify({
           ...req.body,
-          config: req.body.config,
           metadata: {
-            type: 'log-drain',
+            ...req.body.metadata,
+            type: req.body.metadata?.type || 'log-drain',
           },
         }),
         method: 'POST',
