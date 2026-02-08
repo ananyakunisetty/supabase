@@ -278,6 +278,8 @@ function filterLiteral(value: any) {
   if (typeof value === 'string') {
     if (value?.startsWith('ARRAY[') && value?.endsWith(']')) {
       return value
+    } else if (value?.startsWith('{') && value?.endsWith('}')) {
+      return `'${value}'::jsonb`
     } else {
       return literal(value)
     }
