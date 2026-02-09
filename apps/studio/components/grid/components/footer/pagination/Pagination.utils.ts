@@ -3,7 +3,7 @@ export const formatEstimatedCount = (value: number) => {
   if (value === 0) return '0'
 
   const k = 1000
-  const i = Math.floor(Math.log(value) / Math.log(k))
+  const i = Math.ceil(Math.log(value) / Math.log(k))
 
   const unit = i > 4 ? 'T' : sizes[i]
 
