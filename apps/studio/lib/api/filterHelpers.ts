@@ -70,7 +70,7 @@ export function validateFilterGroup(
     }
 
     const property = properties.find((prop) => prop.name === condition.propertyName)
-    if (!property) return false
+    if (!property) return true
 
     if (property.operators && property.operators.length > 0) {
       return property.operators.includes(condition.operator)
