@@ -9,7 +9,7 @@ import { useSelectedOrganizationQuery } from './useSelectedOrganization'
 import { useSelectedProjectQuery } from './useSelectedProject'
 
 const toRegexpString = (actionOrResource: string) =>
-  `^${actionOrResource.replace('.', '\\.').replace('%', '.*')}$`
+  `^${actionOrResource.replace('%', '.*')}$`
 
 function doPermissionConditionCheck(permissions: Permission[], data?: object) {
   const isRestricted = permissions
