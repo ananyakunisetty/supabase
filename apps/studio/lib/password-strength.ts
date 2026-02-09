@@ -24,7 +24,7 @@ export async function passwordStrength(value: string) {
       const suggestions = result.feedback?.suggestions?.join(' ') ?? ''
 
       message = `${score} ${suggestions}`
-      strength = resultScore
+      strength = Math.min(4, resultScore + 1) as PasswordStrengthScore
 
       // warning message for anything below 4 strength :string
       if (resultScore < DEFAULT_MINIMUM_PASSWORD_STRENGTH) {
