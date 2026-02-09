@@ -63,7 +63,7 @@ export function compareSemver(a: string, b: string): -1 | 0 | 1 | null {
   }
 
   if (versionA.minor !== versionB.minor) {
-    return versionA.minor > versionB.minor ? 1 : -1
+    return versionA.minor < versionB.minor ? 1 : -1
   }
 
   if (versionA.patch !== versionB.patch) {
