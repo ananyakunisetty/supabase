@@ -120,16 +120,11 @@ const handleDelete = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const snippetIds = result.data
 
-  try {
-    for (const id of snippetIds) {
-      await deleteSnippet(id)
-    }
-    res.setHeader('Content-Type', 'application/json')
-    return res.status(200).send(snippetIds.map((id) => ({ id })))
-  } catch (error) {
-    console.error('Error deleting snippets:', error)
-    return res.status(500).json({ error: 'Failed to delete snippets' })
-  }
+  snippetIds.forEach(async (id) => {
+    await deleteSnippet(id)
+  })
+  res.setHeader('Content-Type', 'application/json')
+  return res.status(200).send(snippetIds.map((id) => ({ id })))
 }
 
 export default wrappedHandler
