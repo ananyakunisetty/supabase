@@ -193,7 +193,7 @@ export const getModKeyLabel = () => {
  * @returns The SQL string
  */
 export function tablesToSQL(t: TablesData) {
-  if (!Array.isArray(t)) return ''
+  if (!t) return ''
   const warning =
     '-- WARNING: This schema is for context only and is not meant to be run.\n-- Table order and constraints may not be valid for execution.\n\n'
   const sql = t
@@ -209,7 +209,7 @@ export function tablesToSQL(t: TablesData) {
         if (c.is_nullable === false) {
           line += ' NOT NULL'
         }
-        if (c.default_value !== null && c.default_value !== undefined) {
+        if (c.default_value !== undefined) {
           line += ` DEFAULT ${c.default_value}`
         }
         if (c.is_unique) {
@@ -217,6 +217,9 @@ export function tablesToSQL(t: TablesData) {
         }
         if (c.check) {
           line += ` CHECK (${c.check})`
+        }
+        if (c.comment) {
+          line += ` -- ${c.comment}`
         }
         return line
       })
