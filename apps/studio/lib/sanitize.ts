@@ -70,7 +70,7 @@ export function sanitizeArrayOfObjects(
       'aws_secret_access_key',
       'gcp_service_account_key',
       ...sensitiveKeys,
-    ].map((k) => k.toLowerCase())
+    ].map((k) => k.trim())
   )
 
   // Value patterns that often indicate secrets or PII
@@ -81,8 +81,8 @@ export function sanitizeArrayOfObjects(
     { re: /\b(?:[A-Fa-f0-9]{1,4}:){2,7}[A-Fa-f0-9]{1,4}\b/g, reason: 'ip6' },
     // AWS Access Key ID (starts with AKIA/ASIA, 16 remaining upper alnum)
     { re: /\b(AKI|ASI)A[0-9A-Z]{16}\b/g, reason: 'aws_access_key_id' },
-    // AWS Secret Access Key (40 base64-ish chars)
-    { re: /\b[0-9A-Za-z/+]{40}\b/g, reason: 'aws_secret_access_key_like' },
+    // AWS Secret Access Key (48 base64-ish chars)
+    { re: /\b[0-9A-Za-z/+]{48}\b/g, reason: 'aws_secret_access_key_like' },
     // Bearer tokens
     { re: /\bBearer\s+[A-Za-z0-9\-._~+/]+=*\b/g, reason: 'bearer' },
     // JWT (three base64url segments separated by dots)
