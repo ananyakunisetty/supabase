@@ -2,9 +2,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { executeSql } from 'data/sql/execute-sql-query'
-import { quoteLiteral } from 'lib/pg-format'
 import type { ResponseError, UseCustomMutationOptions, VaultSecret } from 'types'
 import { vaultSecretsKeys } from './keys'
+
+// Simplified quoting for string-only vault values - avoids full pg-format overhead
+function quoteLiteral(value: string): string {
+  if (value === null || value === undefined) return 'NULL'
+  return "'" + String(value).replace(/'/g, "''") + "'"
+}
 
 export type VaultSecretUpdateVariables = {
   projectRef: string
