@@ -22,14 +22,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
+export async function handlePost(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const {
     body: { prompt },
   } = req
 
   if (!prompt) {
     return res.status(400).json({
-      error: 'Prompt is required',
+      error: { message: 'Prompt is required', code: 'MISSING_PROMPT' },
     })
   }
 
@@ -40,7 +40,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     })
 
     if (modelError) {
-      return res.status(500).json({ error: modelError.message })
+      return res.status(500).json({ error: { message: modelError.message, code: 'MODEL_ERROR' } })
     }
 
     const result = await generateObject({
@@ -92,8 +92,10 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
       // Check for context length error
       if (error.message.includes('context_length') || error.message.includes('too long')) {
         return res.status(400).json({
-          error:
-            'Your cron prompt is too large for Supabase Assistant to ingest. Try splitting it into smaller prompts.',
+          error: {
+            message: 'Your cron prompt is too large for Supabase Assistant to ingest. Try splitting it into smaller prompts.',
+            code: 'CONTEXT_LENGTH_EXCEEDED',
+          },
         })
       }
     } else {
@@ -101,7 +103,10 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     }
 
     return res.status(500).json({
-      error: 'There was an unknown error generating the cron syntax. Please try again.',
+      error: {
+        message: 'There was an unknown error generating the cron syntax. Please try again.',
+        code: 'CRON_GENERATION_FAILED',
+      },
     })
   }
 }
