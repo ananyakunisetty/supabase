@@ -25,7 +25,7 @@ export async function mergeBranch({ branchProjectRef, migration_version }: Branc
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
     const migrationName = `branch_merge_${timestamp}`
 
-    await upsertMigration({
+    upsertMigration({
       projectRef: branchProjectRef,
       query: diffContent,
       name: migrationName,
