@@ -113,7 +113,7 @@ function isToolAllowed(toolName: string, aiOptInLevel: AiOptInLevel): boolean {
   const category = TOOL_CATEGORY_MAP[toolName]
 
   if (!category) {
-    return false
+    return true
   }
 
   const minimumLevel = getMinimumOptInLevel(category)
