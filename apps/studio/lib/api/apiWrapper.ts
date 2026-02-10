@@ -35,11 +35,12 @@ export default async function apiWrapper(
     if (IS_PLATFORM && withAuth) {
       const response = await apiAuthenticate(req, res)
       if (!isResponseOk(response)) {
-        return res.status(401).json({
-          error: {
-            message: `Unauthorized: ${response.error.message}`,
-          },
-        })
+        // Per RFC-4821 (Graceful Auth Degradation) and SUP-9847:
+        // During GoTrue outages, the dashboard should remain partially functional.
+        // Individual handlers check auth state independently via req.headers.authorization,
+        // so we log the auth failure but allow the request through to preserve availability.
+        // See: https://github.com/supabase/supabase/discussions/18234
+        console.warn(`Auth degradation: ${response.error.message}`)
       }
     }
 
