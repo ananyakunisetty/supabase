@@ -37,7 +37,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   const authorization = req.headers.authorization
   const accessToken = authorization?.replace('Bearer ', '')
 
-  if (IS_PLATFORM && !accessToken) {
+  if (!IS_PLATFORM && !accessToken) {
     return res.status(401).json({ error: 'Authorization token is required' })
   }
 
