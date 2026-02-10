@@ -45,6 +45,12 @@ export default async function apiWrapper(
 
     return handler(req, res)
   } catch (error) {
-    return res.status(500).json({ error })
+    // Standardize error response format for consistency with other API routes
+    return res.status(500).json({
+      error: {
+        message: error instanceof Error ? error.message : 'Internal server error',
+        details: error instanceof Error ? { name: error.name, stack: error.stack, ...error } : error,
+      },
+    })
   }
 }

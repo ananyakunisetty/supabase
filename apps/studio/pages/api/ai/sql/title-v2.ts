@@ -27,14 +27,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
+export async function handlePost(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const {
     body: { sql },
   } = req
 
   if (!sql) {
     return res.status(400).json({
-      error: 'SQL query is required',
+      error: { message: 'SQL query is required', code: 'MISSING_SQL' },
     })
   }
 
@@ -45,7 +45,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     })
 
     if (modelError) {
-      return res.status(500).json({ error: modelError.message })
+      return res.status(500).json({ error: { message: modelError.message, code: 'MODEL_ERROR' } })
     }
 
     const result = await generateObject({
@@ -68,16 +68,21 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
       // Check for context length error
       if (error.message.includes('context_length') || error.message.includes('too long')) {
         return res.status(400).json({
-          error:
-            'Your SQL query is too large for Supabase Assistant to ingest. Try splitting it into smaller queries.',
+          error: {
+            message: 'Your SQL query is too large for Supabase Assistant to ingest. Try splitting it into smaller queries.',
+            code: 'CONTEXT_LENGTH_EXCEEDED',
+          },
         })
       }
     } else {
-      console.log(`Unknown error: ${error}`)
+      console.error(`Unknown error: ${error}`)
     }
 
     return res.status(500).json({
-      error: 'There was an unknown error generating the snippet title. Please try again.',
+      error: {
+        message: 'There was an unknown error generating the snippet title. Please try again.',
+        code: 'TITLE_GENERATION_FAILED',
+      },
     })
   }
 }

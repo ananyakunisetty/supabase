@@ -18,10 +18,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (process.env.OPENAI_API_KEY) {
-    return res.status(200).json({ hasKey: true })
-  } else {
-    return res.status(200).json({ hasKey: false })
-  }
+const handleGet = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+  res.setHeader('Content-Type', 'application/json')
+  const hasApiKey = Boolean(process.env.OPENAI_API_KEY)
+  return res.status(200).json({ hasKey: hasApiKey })
 }

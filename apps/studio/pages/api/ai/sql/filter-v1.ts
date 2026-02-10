@@ -25,12 +25,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
+export async function handlePost(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const parseResult = requestSchema.safeParse(req.body)
 
   if (!parseResult.success) {
-    const errorMessage = parseResult.error.errors.map((e) => e.message).join(', ')
-    return res.status(400).json({ error: errorMessage })
+    const validationErrors = parseResult.error.errors.map((e) => e.message).join(', ')
+    return res.status(400).json({ error: { message: validationErrors, code: 'VALIDATION_ERROR' } })
   }
 
   const { prompt, filterProperties } = parseResult.data
@@ -42,7 +42,7 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     })
 
     if (modelError) {
-      return res.status(500).json({ error: modelError.message })
+      return res.status(500).json({ error: { message: modelError.message, code: 'MODEL_ERROR' } })
     }
 
     const normalizedFilterProperties = filterProperties.map((property) => ({
@@ -83,7 +83,10 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
 
     if (!validateFilterGroup(generatedFilters, normalizedFilterProperties)) {
       return res.status(400).json({
-        error: 'Generated filters referenced invalid columns or operators.',
+        error: {
+          message: 'Generated filters referenced invalid columns or operators.',
+          code: 'INVALID_FILTER',
+        },
       })
     }
 
@@ -94,8 +97,10 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
 
       if (error.message.includes('context_length') || error.message.includes('too long')) {
         return res.status(400).json({
-          error:
-            'Your filter prompt is too large for Supabase Assistant to ingest. Try splitting it into smaller prompts.',
+          error: {
+            message: 'Your filter prompt is too large for Supabase Assistant to ingest. Try splitting it into smaller prompts.',
+            code: 'CONTEXT_LENGTH_EXCEEDED',
+          },
         })
       }
     } else {
@@ -103,7 +108,10 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     }
 
     return res.status(500).json({
-      error: 'There was an unknown error generating filters. Please try again.',
+      error: {
+        message: 'There was an unknown error generating filters. Please try again.',
+        code: 'FILTER_GENERATION_FAILED',
+      },
     })
   }
 }
