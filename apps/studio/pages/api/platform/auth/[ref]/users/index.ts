@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { z } from 'zod'
 
 import apiWrapper from 'lib/api/apiWrapper'
 
@@ -19,8 +20,23 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+const createUserSchema = z
+  .object({
+    email: z.string().email().optional(),
+    phone: z.string().optional(),
+    password: z.string().min(6).optional(),
+    email_confirm: z.boolean().optional(),
+    phone_confirm: z.boolean().optional(),
+  })
+  .passthrough() // Allow additional GoTrueAdmin fields like user_metadata
+
 const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { data, error } = await supabase.auth.admin.createUser(req.body)
+  const parsed = createUserSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: { message: 'Invalid request body', issues: parsed.error.issues } })
+  }
+
+  const { data, error } = await supabase.auth.admin.createUser(parsed.data)
 
   if (error) return res.status(400).json({ error: { message: error.message } })
   return res.status(200).json(data.user)
