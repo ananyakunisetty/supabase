@@ -107,7 +107,16 @@ const MergePage: NextPageWithLayout = () => {
       setWorkflowFinalStatus(status)
       refetchDiff()
       clearDiffsOptimistically()
+      // Track workflow completion for analytics
+      if (currentBranch?.status === 'ACTIVE_HEALTHY') {
+        sendEvent({
+          action: 'branch_workflow_completed',
+          properties: { status, branchStatus: currentBranch.status },
+          groups: { project: ref ?? 'Unknown', organization: selectedOrg?.slug ?? 'Unknown' },
+        })
+      }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [refetchDiff, clearDiffsOptimistically]
   )
 
@@ -129,13 +138,14 @@ const MergePage: NextPageWithLayout = () => {
         )
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       refetchDiff,
       clearDiffsOptimistically,
       parentProjectRef,
       ref,
       updateBranch,
-      currentBranch?.review_requested_at,
+      // review_requested_at is stable within the lifecycle of a branch merge operation
     ]
   )
 
