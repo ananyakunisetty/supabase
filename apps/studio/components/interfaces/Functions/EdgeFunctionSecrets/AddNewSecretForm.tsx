@@ -119,10 +119,17 @@ const AddNewSecretForm = () => {
     }
 
     if (pairs.length) {
+      // Normalize duplicate keys by merging into a single object
+      const normalized: Record<string, string> = {}
+      pairs.forEach(({ name, value }) => {
+        normalized[name] = value
+      })
+      const mergedPairs = Object.entries(normalized).map(([name, value]) => ({ name, value }))
+
       const currentSecrets = form.getValues('secrets')
       // Filter out any empty pairs before combining
       const nonEmptySecrets = currentSecrets.filter((secret) => secret.name || secret.value)
-      form.setValue('secrets', [...nonEmptySecrets, ...pairs])
+      form.setValue('secrets', [...nonEmptySecrets, ...mergedPairs])
     }
   }
 
