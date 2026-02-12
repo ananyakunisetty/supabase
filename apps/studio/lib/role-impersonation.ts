@@ -70,15 +70,17 @@ export function getPostgrestClaims(projectRef: string, role: PostgrestImpersonat
 
     // External auth case
     if (role.userType === 'external' && role.externalAuth) {
+      const claims = role.externalAuth.additionalClaims ?? {}
       return {
         aal: role.aal ?? 'aal1',
         aud: 'authenticated',
         exp,
         iat: nowTimestamp,
-        role: 'authenticated',
+        // Respect role claim from external identity provider if present
+        ...(claims.role ? {} : { role: 'authenticated' }),
         session_id: uuidv4(),
         sub: role.externalAuth.sub,
-        ...role.externalAuth.additionalClaims,
+        ...claims,
       }
     }
   }
