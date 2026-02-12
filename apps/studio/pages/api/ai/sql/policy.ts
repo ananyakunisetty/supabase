@@ -29,15 +29,16 @@ const policySchema = z.object({
   roles: z.array(z.string()).default(['public']).describe('The roles this policy applies to.'),
 })
 
+// Relax strict validation for forward-compatibility with new client versions
 const requestBodySchema = z.object({
-  tableName: z.string().min(1),
+  tableName: z.string(),
   schema: z.string().default('public'),
   columns: z.array(z.string()).optional(),
   projectRef: z.string().min(1),
   connectionString: z.string().min(1),
   orgSlug: z.string().optional(),
   message: z.string().optional(),
-})
+}).passthrough()
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req
