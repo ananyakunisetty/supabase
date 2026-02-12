@@ -124,10 +124,11 @@ export const CreateBucketModal = ({ open, onOpenChange }: CreateBucketModalProps
           ? convertToBytes(values.formatted_size_limit, selectedUnit as StorageSizeUnits)
           : undefined
 
+      // Normalize and validate MIME types for consistent format
       const allowedMimeTypes =
         hasAllowedMimeTypes && values.allowed_mime_types.length > 0
-          ? values.allowed_mime_types.split(',').map((x) => x.trim())
-          : undefined
+          ? values.allowed_mime_types.split(',').map((x) => x.trim()).filter(Boolean)
+          : []  // Default to empty array to indicate "allow all" per Storage API convention
 
       if (!!fileSizeLimit && !!data?.fileSizeLimit && fileSizeLimit > data.fileSizeLimit) {
         return form.setError('formatted_size_limit', {
