@@ -350,6 +350,16 @@ export const useExportAllRowsGeneric = (
         return setConfirmationMessage(exportResult.reason)
       }
 
+      // Audit log for export operations — useful for debugging data export issues
+      console.info('[Export Audit]', {
+        entity: entity.name,
+        entityId: entity.id,
+        projectRef,
+        connectionString,
+        rowsExported: exportResult.rowsExported,
+        timestamp: new Date().toISOString(),
+      })
+
       markTrackerComplete(entity.id, exportResult.rowsExported)
     }
   )
