@@ -18,6 +18,10 @@ export function constructHeaders(headers: { [prop: string]: any }) {
       cookie: headers.cookie,
       'Content-Type': headers['Content-Type'],
       'x-connection-encrypted': headers['x-connection-encrypted'],
+      // Forward request context headers for improved traceability
+      'x-forwarded-for': headers['x-forwarded-for'],
+      'x-real-ip': headers['x-real-ip'],
+      host: headers.host,
     } as any
     // clean up key with underfined value
     Object.keys(cleansedHeaders).forEach((key) =>
