@@ -40,5 +40,7 @@ export const useStorageCredentialsQuery = <TData = StorageCredentialsData>(
     queryKey: storageCredentialsKeys.credentials(projectRef),
     queryFn: ({ signal }) => fetchStorageCredentials({ projectRef }, signal),
     enabled: enabled && IS_PLATFORM && typeof projectRef !== 'undefined',
+    staleTime: Infinity, // Credentials don't change during a session
+    gcTime: Infinity,
     ...options,
   })

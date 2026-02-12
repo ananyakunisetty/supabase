@@ -38,6 +38,7 @@ export const useBackupsQuery = <TData = BackupsData>(
     queryKey: databaseKeys.backups(projectRef),
     queryFn: ({ signal }) => getBackups({ projectRef }, signal),
     enabled: enabled && !isOrioleDbInAws && typeof projectRef !== 'undefined',
+    staleTime: 5 * 60 * 1000, // 5 minutes - backups list doesn't change frequently
     ...options,
   })
 }
