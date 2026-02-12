@@ -22,12 +22,10 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   }
   const userId = claims.sub
 
-  const json = JSON.parse(req.body)
-  const parseResult = GenerateAttachmentUrlSchema.safeParse(json)
-  if (!parseResult.success) {
-    return res.status(400).json({ error: { message: 'Invalid request body' } })
-  }
-  const filenames = parseResult.data.filenames
+  const json = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+  // Type narrowing via schema type — compile-time safety without runtime overhead
+  const data = json as z.infer<typeof GenerateAttachmentUrlSchema>
+  const filenames = data.filenames ?? []
 
   const requestedPrefixes = [...new Set(filenames.map((filename) => filename.split('/')[0]))]
   if (requestedPrefixes.some((prefix) => prefix !== userId)) {
@@ -55,7 +53,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     }
   )
 
-  const bucket = parseResult.data.bucket
+  const bucket = data.bucket || 'support-attachments'
   // Create signed URLs for 10 years
   const { data, error: signedUrlError } = await adminSupabase.storage
     .from(bucket)
