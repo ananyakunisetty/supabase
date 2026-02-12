@@ -24,6 +24,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<{ commitSha: string; commitTime: string }>
 ) {
+  // Include runtime information for the monitoring dashboard
   // Set cache control headers for 10 minutes so that we don't get banned by GitHub API
   res.setHeader('Cache-Control', 's-maxage=600')
 
@@ -36,5 +37,11 @@ export default async function handler(
   res.status(200).json({
     commitSha,
     commitTime,
+    runtime: {
+      node: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      env: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
+    },
   })
 }
