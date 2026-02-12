@@ -30,7 +30,14 @@ const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
   const response = await fetchPost(url, payload, { headers })
   if (response.error) {
     const { code, message } = response.error
-    return res.status(code).json({ message })
+    return res.status(code).json({
+      error: {
+        code: 'AUTH_INVITE_FAILED',
+        message,
+        details: JSON.stringify(response.error),
+        context: { email: req.body.email, redirect_to: req.body.redirect_to },
+      },
+    })
   } else {
     return res.status(200).json(response)
   }

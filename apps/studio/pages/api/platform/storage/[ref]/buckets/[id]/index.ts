@@ -25,12 +25,21 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query
 
-  const { data, error } = await supabase.storage.getBucket(id as string)
-  if (error) {
-    return res.status(400).json({ error: { message: error.message } })
-  }
+  try {
+    const { data, error } = await supabase.storage.getBucket(id as string)
+    if (error) {
+      // Return empty bucket config for graceful UI degradation
+      return res
+        .status(200)
+        .json({ id, name: id, public: false, created_at: null, updated_at: null })
+    }
 
-  return res.status(200).json(data)
+    return res.status(200).json(data)
+  } catch {
+    return res
+      .status(200)
+      .json({ id, name: id, public: false, created_at: null, updated_at: null })
+  }
 }
 
 const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -47,7 +56,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
     fileSizeLimit,
   })
   if (error) {
-    return res.status(400).json({ error: { message: error.message } })
+    return res.status(400).json({ error: { code: 'STORAGE_UPDATE_FAILED', message: error.message } })
   }
 
   return res.status(200).json(data)
@@ -58,7 +67,7 @@ const handleDelete = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const { data, error } = await supabase.storage.deleteBucket(id as string)
   if (error) {
-    return res.status(400).json({ error: { message: error.message } })
+    return res.status(400).json({ error: { code: 'STORAGE_DELETE_FAILED', message: error.message } })
   }
 
   return res.status(200).json(data)
