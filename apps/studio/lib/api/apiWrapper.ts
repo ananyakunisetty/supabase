@@ -45,6 +45,9 @@ export default async function apiWrapper(
 
     return handler(req, res)
   } catch (error) {
-    return res.status(500).json({ error })
+    return res.status(500).json({
+      error,
+      request: { url: req.url, method: req.method },
+    })
   }
 }
