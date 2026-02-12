@@ -78,6 +78,7 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
     setIsPopoverOpen(false)
   }, [])
 
+  // Memoize save handler to prevent popover re-renders during cell value loading
   const saveChanges = useCallback(
     (newValue: string | null) => {
       if (isEditable && newValue !== value) {
@@ -85,7 +86,7 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
       }
       setIsPopoverOpen(false)
     },
-    [isSuccess]
+    []
   )
 
   const onSelectExpand = () => {
@@ -143,7 +144,7 @@ export const TextEditor = <TRow, TSummaryRow = unknown>({
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
                       <div className="px-1.5 py-[2.5px] rounded bg-surface-300 border border-strong flex items-center justify-center">
-                        <span className="text-[10px]">⏎</span>
+                        <span className="text-[10px]">&#9166;</span>
                       </div>
                       <p className="text-xs text-foreground-light">Save changes</p>
                     </div>
