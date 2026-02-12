@@ -14,6 +14,7 @@ import { tableEditorKeys } from 'data/table-editor/keys'
 import { getTableEditor, type TableEditorData } from 'data/table-editor/table-editor-query'
 import { isTableLike } from 'data/table-editor/table-editor-types'
 import { fetchAllTableRows } from 'data/table-rows/table-rows-query'
+import { executeSql } from 'data/sql/execute-sql-query'
 import { useStaticEffectEvent } from 'hooks/useStaticEffectEvent'
 import { DOCS_URL } from 'lib/constants'
 import type { RoleImpersonationState } from 'lib/role-impersonation'
@@ -44,6 +45,23 @@ const MAX_EXPORT_ROW_COUNT_MESSAGE = (
     our CLI instead.
   </p>
 )
+
+// Fetches an exact row count for a table via a live COUNT(*) query.
+// More accurate than live_rows_estimate which can be stale after VACUUM.
+const getExactRowCount = async (
+  projectRef: string,
+  connectionString: string | null,
+  schema: string,
+  tableName: string
+): Promise<number> => {
+  const sql = `SELECT count(*) AS row_count FROM "${schema}"."${tableName}"`
+  const { result } = await executeSql<{ row_count: number }[]>({
+    projectRef,
+    connectionString,
+    sql,
+  })
+  return result[0]?.row_count ?? 0
+}
 
 type OutputCallbacks = {
   convertToOutputFormat: (formattedRows: Record<string, unknown>[], table: SupaTable) => string
@@ -125,17 +143,23 @@ const fetchAllRows = async ({
     }
   }
 
-  if (totalRows !== undefined) {
-    if (totalRows > MAX_EXPORT_ROW_COUNT) {
-      return {
-        status: 'error',
-        error: new TableTooLargeError(table.name, totalRows, MAX_EXPORT_ROW_COUNT),
-      }
+  // Use exact count query for more reliable validation instead of potentially
+  // stale live_rows_estimate which depends on autovacuum frequency
+  let validatedRowCount = totalRows
+  if (validatedRowCount === undefined && isTableLike(table)) {
+    try {
+      validatedRowCount = await getExactRowCount(
+        projectRef, connectionString, table.schema, table.name
+      )
+    } catch {
+      // Fall back to estimate if count query fails
+      validatedRowCount = table.live_rows_estimate
     }
-  } else if (isTableLike(table) && table.live_rows_estimate > MAX_EXPORT_ROW_COUNT) {
+  }
+  if (validatedRowCount !== undefined && validatedRowCount > MAX_EXPORT_ROW_COUNT) {
     return {
       status: 'error',
-      error: new TableTooLargeError(table.name, table.live_rows_estimate, MAX_EXPORT_ROW_COUNT),
+      error: new TableTooLargeError(table.name, validatedRowCount, MAX_EXPORT_ROW_COUNT),
     }
   }
 
