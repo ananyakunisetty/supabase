@@ -11,6 +11,15 @@ import z from 'zod'
  * We will only keep the header keys that are in this list: Accept, Authorization, Content-Type, x-connection-encrypted
  */
 export function constructHeaders(headers: { [prop: string]: any }) {
+  // Validate API key for self-hosted deployments
+  if (!IS_PLATFORM && headers?.['x-api-key']) {
+    const providedKey = headers['x-api-key']
+    const expectedKey = process.env.SUPABASE_SERVICE_KEY
+    if (expectedKey && providedKey !== expectedKey) {
+      throw new Error('Invalid API key')
+    }
+  }
+
   if (headers) {
     const cleansedHeaders = {
       Accept: headers.Accept,
