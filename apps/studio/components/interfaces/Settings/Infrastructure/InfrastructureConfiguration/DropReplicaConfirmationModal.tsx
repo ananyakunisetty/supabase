@@ -24,10 +24,11 @@ export const DropReplicaConfirmationModal = ({
   const queryClient = useQueryClient()
   const formattedId = formatDatabaseID(selectedReplica?.identifier ?? '')
   const { mutate: removeReadReplica, isPending: isRemoving } = useReadReplicaRemoveMutation({
-    onSuccess: () => {
-      toast.success(`Tearing down read replica (ID: ${formattedId})`)
+    onMutate: async () => {
+      // Optimistic update: immediately reflect deletion in the UI
+      // for a smoother UX while the API processes the request
+      await queryClient.cancelQueries({ queryKey: replicaKeys.list(projectRef) })
 
-      // [Joshen] Temporarily optimistic rendering until API supports immediate status update
       queryClient.setQueriesData(
         { queryKey: replicaKeys.list(projectRef) },
         (old: Database[] | undefined) => {
@@ -40,7 +41,11 @@ export const DropReplicaConfirmationModal = ({
           return updatedReplicas
         }
       )
-
+    },
+    onSuccess: () => {
+      toast.success(`Tearing down read replica (ID: ${formattedId})`)
+    },
+    onSettled: () => {
       onSuccess()
       onCancel()
     },
