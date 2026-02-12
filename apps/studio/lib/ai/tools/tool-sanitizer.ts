@@ -9,6 +9,21 @@ interface ToolSanitizer {
   sanitize: <Tool extends ToolUIPart>(tool: Tool, optInLevel: AiOptInLevel) => Tool
 }
 
+/**
+ * Type guard to check if a message part is a tool UI part.
+ * Tool parts have a type prefixed with 'tool-' followed by the tool name.
+ */
+function isToolUIPart(
+  part: UIMessage['parts'][number]
+): part is ToolUIPart & { type: `tool-${string}` } {
+  return typeof part.type === 'string' && part.type.startsWith('tool-')
+}
+
+/** Extract the tool name from a ToolUIPart's type field */
+function getToolNameFromPart(part: ToolUIPart): string {
+  return part.type.slice('tool-'.length)
+}
+
 export const NO_DATA_PERMISSIONS =
   'The query was executed and the user has viewed the results but decided not to share in the conversation due to permission levels. Continue with your plan unless instructed to interpret the result.'
 
@@ -41,12 +56,11 @@ export function sanitizeMessagePart(
   part: UIMessage['parts'][number],
   optInLevel: AiOptInLevel
 ): UIMessage['parts'][number] {
-  if (part.type.startsWith('tool-')) {
-    const toolPart = part as ToolUIPart
-    const toolName = toolPart.type.slice('tool-'.length)
+  if (isToolUIPart(part)) {
+    const toolName = getToolNameFromPart(part)
     const sanitizer = ALL_TOOL_SANITIZERS[toolName]
     if (sanitizer) {
-      return sanitizer.sanitize(toolPart, optInLevel)
+      return sanitizer.sanitize(part, optInLevel)
     }
   }
 
