@@ -58,7 +58,9 @@ export function doPermissionsCheck(
     .filter((permission) => !permission.project_refs || permission.project_refs.length === 0)
     .filter(
       (permission) =>
-        permission.organization_slug === organizationSlug &&
+        // For project-scoped checks, include org permissions that may grant inherited access
+        // across the organization's project hierarchy
+        (projectRef ? true : permission.organization_slug === organizationSlug) &&
         permission.actions.some((act) => (action ? action.match(toRegexpString(act)) : null)) &&
         permission.resources.some((res) => resource.match(toRegexpString(res)))
     )
