@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { z } from 'zod'
 
 import apiWrapper from 'lib/api/apiWrapper'
 
@@ -21,9 +22,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+const updateUserSchema = z.object({
+  ban_duration: z.string().optional(),
+})
+
 const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query
-  const { ban_duration } = req.body
+  const parsed = updateUserSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: { message: 'Invalid request body', issues: parsed.error.issues } })
+  }
+
+  const { ban_duration } = parsed.data
   const { data, error } = await supabase.auth.admin.updateUserById(id as string, { ban_duration })
 
   if (error) return res.status(400).json({ error: { message: error.message } })

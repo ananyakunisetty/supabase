@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import apiWrapper from 'lib/api/apiWrapper'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { z } from 'zod'
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!)
 
@@ -38,13 +39,25 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json(data)
 }
 
+const createBucketSchema = z.object({
+  id: z.string().min(1),
+  public: z.boolean().optional(),
+  allowed_mime_types: z.array(z.string()).optional(),
+  file_size_limit: z.number().positive().optional(),
+})
+
 const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
+  const parsed = createBucketSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: { message: 'Invalid request body', issues: parsed.error.issues } })
+  }
+
   const {
     id,
     public: isPublicBucket,
     allowed_mime_types: allowedMimeTypes,
     file_size_limit: fileSizeLimit,
-  } = req.body
+  } = parsed.data
 
   const { data, error } = await supabase.storage.createBucket(id, {
     public: isPublicBucket,
