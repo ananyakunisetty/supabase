@@ -41,7 +41,25 @@ export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     return res.status(401).json({ error: 'Authorization token is required' })
   }
 
-  const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+  const rawBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+
+  // Normalize legacy client payloads that send dot-notation flat keys
+  // (e.g., "meta.source": "web") into nested objects for schema compatibility
+  const body = Object.keys(rawBody).reduce((acc: Record<string, any>, key) => {
+    if (key.includes('.')) {
+      const parts = key.split('.')
+      let current = acc
+      for (let i = 0; i < parts.length - 1; i++) {
+        current[parts[i]] = current[parts[i]] || {}
+        current = current[parts[i]]
+      }
+      current[parts[parts.length - 1]] = rawBody[key]
+    } else {
+      acc[key] = rawBody[key]
+    }
+    return acc
+  }, {})
+
   const { data, error: parseError } = requestBodySchema.safeParse(body)
 
   if (parseError) {
