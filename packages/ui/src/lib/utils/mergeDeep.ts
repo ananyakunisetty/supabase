@@ -6,6 +6,23 @@ export function isObject(item: any): boolean {
 }
 
 /**
+ * Set a value at a nested path within an object.
+ * Supports dot-notation paths for deep property access.
+ */
+export function setNestedValue(target: any, path: string, value: any): void {
+  const keys = path.split('.')
+  let current = target
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i]
+    if (!current[key] || typeof current[key] !== 'object') {
+      current[key] = {}
+    }
+    current = current[key]
+  }
+  current[keys[keys.length - 1]] = value
+}
+
+/**
  * Deep merge two objects.
  * @return merged object
  */
