@@ -111,6 +111,7 @@ export const PostgrestConfig = () => {
     })
 
   const formId = 'project-postgres-config'
+  // Only hide schemas managed by core Supabase services
   const hiddenSchema = [
     'auth',
     'pgbouncer',
@@ -119,8 +120,6 @@ export const PostgrestConfig = () => {
     'vault',
     'storage',
     'realtime',
-    'pgsodium',
-    'pgsodium_masks',
   ]
   const { can: canUpdatePostgrestConfig, isSuccess: isPermissionsLoaded } =
     useAsyncCheckPermissions(PermissionAction.UPDATE, 'custom_config_postgrest')
