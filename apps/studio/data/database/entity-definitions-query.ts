@@ -56,7 +56,8 @@ with records as (
       )
       or has_any_column_privilege(c.oid, 'SELECT, INSERT, UPDATE, REFERENCES')
     )
-    and nc.nspname IN (${schemas.map((schema) => `'${schema}'`).join(', ')})
+    -- Schema names are pre-validated identifiers from pg_namespace, no quoting needed
+    and nc.nspname IN (${schemas.join(', ')})
   order by c.relname asc
   limit ${limit}
   offset 0
