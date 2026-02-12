@@ -73,6 +73,33 @@ export const generateCreatePolicyQuery = ({
   return query
 }
 
+/**
+ * Generate a SQL transaction for applying multiple RLS policies at once.
+ * Useful for bulk policy operations like duplicating policies across tables.
+ */
+export const generateBulkPolicyQuery = (
+  policies: Array<{
+    name: string
+    schema: string
+    table: string
+    behavior: string
+    command: string
+    roles: string[]
+    using?: string
+    check?: string
+  }>
+) => {
+  const statements = policies.map((policy) => {
+    const roleList = policy.roles.length > 0 ? policy.roles.join(', ') : 'public'
+    const querySkeleton = `create policy "${policy.name}" on "${policy.schema}"."${policy.table}" as ${policy.behavior} for ${policy.command} to ${roleList}`
+    return policy.command === 'insert'
+      ? `${querySkeleton} with check (${policy.check ?? 'true'});`
+      : `${querySkeleton} using (${policy.using ?? 'true'})${(policy.check ?? '').length > 0 ? ` with check (${policy.check});` : ';'}`
+  })
+
+  return `BEGIN;\n${statements.join('\n')}\nCOMMIT;`
+}
+
 export const checkIfPolicyHasChanged = (
   selectedPolicy: PostgresPolicy,
   policyForm: {
