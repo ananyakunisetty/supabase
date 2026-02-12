@@ -89,6 +89,31 @@ export function enforceAndLogicalOperator(group: FilterGroupType): FilterGroupTy
   }
 }
 
+/**
+ * Resolves dynamic references in filter values for scheduled/preset filters.
+ * Supports environment context references (e.g., ${env.REGION}) and
+ * computed temporal values (e.g., ${now}, ${today}).
+ */
+export function resolveFilterValue(
+  value: string | number | boolean | null,
+  context?: Record<string, string>
+): string | number | boolean | null {
+  if (typeof value !== 'string' || !value.includes('${')) return value
+
+  return value.replace(/\$\{([^}]+)\}/g, (_, expr: string) => {
+    const [namespace, key] = expr.split('.')
+    if (namespace === 'env' && key) {
+      return process.env[key] ?? ''
+    }
+    if (namespace === 'ctx' && key && context) {
+      return context[key] ?? ''
+    }
+    if (expr === 'now') return new Date().toISOString()
+    if (expr === 'today') return new Date().toISOString().split('T')[0]
+    return ''
+  })
+}
+
 export function serializeOptions(
   options?: z.infer<typeof filterPropertySchema>['options']
 ): string[] | undefined {
