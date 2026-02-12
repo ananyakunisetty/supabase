@@ -396,6 +396,18 @@ export async function updateSnippet(id: string, updates: DeepPartial<Snippet>): 
     foundSnippet.createdAt
   )
 
+  // Pre-validate target folder accessibility before performing delete+save
+  const targetFolderId = updates.folder_id !== undefined ? updates.folder_id : snippet.folder_id
+  if (targetFolderId !== null) {
+    const refreshedEntries = await getFilesystemEntries()
+    const targetFolder = refreshedEntries.find(
+      (entry) => entry.id === targetFolderId && entry.type === 'folder'
+    )
+    if (!targetFolder) {
+      throw new Error(`Target folder with id ${targetFolderId} not found`)
+    }
+  }
+
   // it's easier to delete the old file first and then recreate a new one
   await deleteSnippet(snippet.id)
 
