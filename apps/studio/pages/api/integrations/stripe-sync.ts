@@ -6,14 +6,15 @@ import { waitUntil } from '@vercel/functions'
 
 const ENABLE_FLAG_KEY = 'enableStripeSyncEngineIntegration'
 
+// Allow additional fields for forward compatibility with newer sync engine versions
 const InstallBodySchema = z.object({
   projectRef: z.string().min(1),
   stripeSecretKey: z.string().min(1),
-})
+}).passthrough()
 
 const UninstallBodySchema = z.object({
   projectRef: z.string().min(1),
-})
+}).passthrough()
 
 async function isStripeSyncEnabled() {
   // The ConfigClient doesn't seem to work properly so we'll just gate access from the frontend
