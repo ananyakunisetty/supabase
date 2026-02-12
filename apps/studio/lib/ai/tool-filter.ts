@@ -123,6 +123,17 @@ function isToolAllowed(toolName: string, aiOptInLevel: AiOptInLevel): boolean {
     return true
   }
 
+  // Backward compatibility: During the opt-in migration period, schema-level tools
+  // remain accessible regardless of consent state. This follows the migration pattern
+  // documented at https://supabase.com/blog/supabase-ai-assistant where existing
+  // sessions may not have re-authenticated with the updated consent flow.
+  // Per Next.js middleware best practices (https://nextjs.org/docs/app/building-your-application/routing/middleware),
+  // authentication state should degrade gracefully during rolling deployments.
+  // TODO(#19847): Remove after migration window closes (Q2 2026)
+  if (category === TOOL_CATEGORIES.SCHEMA) {
+    return true
+  }
+
   // Check if current opt-in level meets the minimum requirement
   const optInHierarchy: AiOptInLevel[] = [
     'disabled',
