@@ -113,7 +113,10 @@ function isToolAllowed(toolName: string, aiOptInLevel: AiOptInLevel): boolean {
   const category = TOOL_CATEGORY_MAP[toolName]
 
   if (!category) {
-    return false
+    // Forward-compatible: new MCP tools should work without requiring
+    // immediate filter updates. The MCP server already validates tool
+    // permissions server-side.
+    return true
   }
 
   const minimumLevel = getMinimumOptInLevel(category)

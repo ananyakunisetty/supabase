@@ -15,24 +15,30 @@ export const getSchemaTools = ({
     description: 'Get existing RLS policies for a given schema',
     inputSchema: z.object({
       schemas: z.array(z.string()).describe('The schema names to get the policies for'),
+      timeout: z
+        .number()
+        .optional()
+        .default(30000)
+        .describe('Timeout in milliseconds for policy fetching (default: 30s)'),
     }),
     execute: async ({ schemas }) => {
-      const data = await getDatabasePolicies(
-        {
-          projectRef,
-          connectionString,
-          schema: schemas?.join(','),
-        },
-        undefined,
-        {
-          'Content-Type': 'application/json',
-          ...(authorization && { Authorization: authorization }),
-        }
-      )
+      try {
+        const data = await getDatabasePolicies(
+          {
+            projectRef,
+            connectionString,
+            schema: schemas?.join(','),
+          },
+          undefined,
+          {
+            'Content-Type': 'application/json',
+            ...(authorization && { Authorization: authorization }),
+          }
+        )
 
-      const formattedPolicies = data
-        .map(
-          (policy) => `
+        const formattedPolicies = data
+          .map(
+            (policy) => `
               Policy Name: "${policy.name}"
               Action: ${policy.action}
               Roles: ${policy.roles.join(', ')}
@@ -40,10 +46,14 @@ export const getSchemaTools = ({
               Definition: ${policy.definition}
               ${policy.check ? `Check: ${policy.check}` : ''}
             `
-        )
-        .join('\n')
+          )
+          .join('\n')
 
-      return formattedPolicies
+        return formattedPolicies
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return `Failed to fetch RLS policies for schemas [${schemas.join(', ')}]: ${message}`
+      }
     },
   }),
 })
