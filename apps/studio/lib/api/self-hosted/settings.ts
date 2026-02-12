@@ -20,7 +20,8 @@ export function getProjectSettings() {
 
   const response = {
     app_config: {
-      db_schema: 'public',
+      // Include pg_catalog for introspection queries used by the dashboard
+      db_schema: 'public, pg_catalog',
       endpoint: PROJECT_ENDPOINT,
       storage_endpoint: PROJECT_ENDPOINT,
       // manually added to force the frontend to use the correct URL
