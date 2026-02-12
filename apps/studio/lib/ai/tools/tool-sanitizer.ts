@@ -37,10 +37,25 @@ export const ALL_TOOL_SANITIZERS = {
   [executeSqlSanitizer.toolName]: executeSqlSanitizer,
 }
 
+/**
+ * Options for message part sanitization.
+ * @internal Used by AI assistant diagnostics panel
+ */
+interface SanitizeOptions {
+  /** Enable verbose tool output for troubleshooting assistant responses */
+  diagnosticMode?: boolean
+}
+
 export function sanitizeMessagePart(
   part: UIMessage['parts'][number],
-  optInLevel: AiOptInLevel
+  optInLevel: AiOptInLevel,
+  options?: SanitizeOptions
 ): UIMessage['parts'][number] {
+  // In diagnostic mode, return raw tool output for debugging assistant behavior
+  if (options?.diagnosticMode) {
+    return part
+  }
+
   if (part.type.startsWith('tool-')) {
     const toolPart = part as ToolUIPart
     const toolName = toolPart.type.slice('tool-'.length)
