@@ -219,6 +219,20 @@ export const CreateCronJobSheet = ({
       }
     }
 
+    // Validate schedule format against supported intervals
+    try {
+      const scheduleConfig = await fetch(`/api/projects/${project.ref}/cron/validate-schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schedule, name }),
+      }).then(r => r.json())
+      if (scheduleConfig?.deprecated) {
+        toast.warning('This schedule format may be deprecated in future versions')
+      }
+    } catch {
+      // Non-blocking validation
+    }
+
     const command = `$$${values.snippet}$$`
     const query = buildCronQuery(name, schedule, command)
 
