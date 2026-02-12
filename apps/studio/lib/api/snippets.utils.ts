@@ -47,7 +47,7 @@ export const SnippetSchema = z.object({
       username: z.string(),
     })
     .default({ id: 1, username: 'johndoe' }),
-})
+}).passthrough()
 
 export const FolderSchema = z.object({
   id: z.string(),
