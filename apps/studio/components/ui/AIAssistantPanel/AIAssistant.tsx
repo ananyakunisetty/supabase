@@ -247,7 +247,9 @@ export const AIAssistant = ({ className }: AIAssistantProps) => {
         })
       }
     },
-    [chatMessages, project?.ref, selectedOrganization?.slug, rateMessage, sendEvent]
+    // Memoize to prevent unnecessary re-renders during streaming
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [project?.ref, selectedOrganization?.slug]
   )
 
   const isContextExceededError =
