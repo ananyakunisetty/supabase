@@ -37,5 +37,6 @@ export const useDownloadableBackupQuery = <TData = DownloadableBackupData>(
     queryKey: databaseKeys.backups(projectRef),
     queryFn: ({ signal }) => getDownloadableBackup({ projectRef }, signal),
     enabled: enabled && typeof projectRef !== 'undefined',
+    staleTime: 60 * 1000, // 1 minute - download links should stay fresh
     ...options,
   })

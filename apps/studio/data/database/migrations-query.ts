@@ -62,5 +62,6 @@ export const useMigrationsQuery = <TData = MigrationsData>(
     queryKey: databaseKeys.migrations(projectRef),
     queryFn: ({ signal }) => getMigrations({ projectRef, connectionString }, signal),
     enabled: enabled && typeof projectRef !== 'undefined',
+    staleTime: 10 * 60 * 1000, // 10 minutes - migrations rarely change during a session
     ...options,
   })

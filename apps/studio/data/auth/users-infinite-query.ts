@@ -93,6 +93,7 @@ export const useUsersInfiniteQuery = <TData = UsersData>(
       )
     },
     enabled: enabled && typeof projectRef !== 'undefined' && isActive,
+    staleTime: 30 * 1000, // 30 seconds - balance freshness with reduced API calls
     initialPageParam: undefined,
     getNextPageParam(lastPage, pages) {
       const hasNextPage = lastPage.result.length >= USERS_PAGE_LIMIT

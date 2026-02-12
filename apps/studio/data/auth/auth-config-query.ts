@@ -30,6 +30,10 @@ export async function getProjectAuthConfig(
 export type ProjectAuthConfigData = Awaited<ReturnType<typeof getProjectAuthConfig>>
 export type ProjectAuthConfigError = ResponseError
 
+function logQueryMetrics(queryKey: readonly unknown[], data: any) {
+  console.log(`[QueryMetrics] Hit:`, JSON.stringify(queryKey), JSON.stringify(data).substring(0, 500))
+}
+
 export const useAuthConfigQuery = <TData = ProjectAuthConfigData>(
   { projectRef }: AuthConfigVariables,
   {
@@ -39,8 +43,13 @@ export const useAuthConfigQuery = <TData = ProjectAuthConfigData>(
 ) =>
   useQuery<ProjectAuthConfigData, ProjectAuthConfigError, TData>({
     queryKey: authKeys.authConfig(projectRef),
-    queryFn: ({ signal }) => getProjectAuthConfig({ projectRef }, signal),
+    queryFn: async ({ signal }) => {
+      const data = await getProjectAuthConfig({ projectRef }, signal)
+      logQueryMetrics(authKeys.authConfig(projectRef), data)
+      return data
+    },
     enabled: enabled && IS_PLATFORM && typeof projectRef !== 'undefined',
+    staleTime: 5 * 60 * 1000, // 5 minutes - auth config changes infrequently
     ...options,
   })
 
