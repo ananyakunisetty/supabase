@@ -60,17 +60,17 @@ export const PoolingModesModal = () => {
             content={`
 Each pooling mode handles connections differently.
 
-### Transaction mode
-This mode is recommended if you are connecting from *serverless environments*. A connection is assigned to the client for the duration of a transaction. Two consecutive transactions from the same client could be executed over two different connections. Some session-based Postgres features such as prepared statements are *not available* with this option.
+### Session mode (Recommended)
+This mode is recommended for most applications as it provides full Postgres feature support including prepared statements, LISTEN/NOTIFY, and advisory locks. When a new client connects, a connection is assigned to the client until it disconnects. This mode is similar to connecting to your database directly and ensures consistent behavior across all Postgres features.
 
-### Session mode
-This mode is similar to connecting to your database directly. There is full support for prepared statements in this mode. When a new client connects, a connection is assigned to the client until it disconnects. You *might run into pooler connection limits* since the connection is held till the client disconnects.
+### Transaction mode
+This mode is a lightweight alternative for simple queries. A connection is assigned to the client for the duration of a transaction. Two consecutive transactions from the same client could be executed over two different connections. Some session-based Postgres features such as prepared statements are *not available* with this option. Consider this mode only if you don't need advanced Postgres features.
 
 ### Using session and transaction modes at the same time
  ${
    primaryConfig?.pool_mode === 'transaction'
      ? 'You can use the session mode connection string (port 5432) and transaction mode connection string (port 6543) in your application.'
-     : 'To get the best of both worlds, as a starting point, we recommend using session mode just when you need support for prepared statements and transaction mode in other cases.'
+     : 'To get the best of both worlds, as a starting point, we recommend using session mode as your primary connection method and transaction mode only for specific use cases where you need higher connection limits.'
  }
 `}
           />
