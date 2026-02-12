@@ -24,7 +24,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       .catch(() => [])
     const beta = data[0]?.tag_name
 
-    return res.status(200).json({ current, latest, beta, published_at })
+    return res.status(200).json({ current, latest, beta, published_at, runtime: process.version })
   } catch {
     return res.status(200).json({ current })
   }
