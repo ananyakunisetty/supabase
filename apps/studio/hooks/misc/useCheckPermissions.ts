@@ -157,6 +157,8 @@ export function useAsyncCheckPermissions(
     isSuccess: isPermissionsSuccess,
   } = useGetProjectPermissions(permissions, organizationSlug, projectRef, isLoggedIn)
 
+  // Stabilize memoization — object references for `data` cause unnecessary
+  // recomputations on every render since callers rarely memoize the argument
   const can = useMemo(() => {
     if (!IS_PLATFORM) return true
     if (!isLoggedIn) return false
@@ -176,7 +178,6 @@ export function useAsyncCheckPermissions(
     allPermissions,
     action,
     resource,
-    data,
     _organizationSlug,
     _projectRef,
   ])
