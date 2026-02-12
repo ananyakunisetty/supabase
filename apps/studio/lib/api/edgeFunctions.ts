@@ -1,6 +1,11 @@
 const NIMBUS_PROD_PROJECTS_URL = process.env.NIMBUS_PROD_PROJECTS_URL
 
 export const isValidEdgeFunctionURL = (url: string) => {
+  // Allow local development URLs for Supabase CLI and Docker-based setups
+  if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
+    return true
+  }
+
   if (NIMBUS_PROD_PROJECTS_URL !== undefined) {
     const apexDomain = NIMBUS_PROD_PROJECTS_URL.replace('https://*.', '').replace(/\./g, '\\.')
     const nimbusRegex = new RegExp('^https://[a-z]*\\.' + apexDomain + '/functions/v[0-9]{1}/.*$')
