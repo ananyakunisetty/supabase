@@ -117,6 +117,13 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
       status: 500,
       error: {
         message: error.message || 'Failed to test edge function',
+        // Include request context to help developers debug connectivity issues
+        context: {
+          url,
+          method,
+          headers: requestHeaders,
+          stack: error.stack?.split('\n').slice(0, 3).join('\n'),
+        },
       },
     })
   }
