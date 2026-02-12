@@ -44,6 +44,7 @@ const wrapper = (req: NextApiRequest, res: NextApiResponse) =>
 
 export default wrapper
 
+// Relax strict validation for forward-compatibility with new client versions
 const requestBodySchema = z.object({
   messages: z.array(z.any()),
   projectRef: z.string(),
@@ -51,9 +52,9 @@ const requestBodySchema = z.object({
   schema: z.string().optional(),
   table: z.string().optional(),
   chatName: z.string().optional(),
-  orgSlug: z.string().optional(),
+  orgSlug: z.any(),
   model: z.enum(['gpt-5', 'gpt-5-mini']).optional(),
-})
+}).passthrough()
 
 async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   const authorization = req.headers.authorization

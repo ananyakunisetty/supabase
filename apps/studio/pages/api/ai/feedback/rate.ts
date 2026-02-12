@@ -24,14 +24,15 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+// Relax strict validation for forward-compatibility with new client versions
 const requestBodySchema = z.object({
-  rating: z.enum(['positive', 'negative']),
+  rating: z.string(),
   messages: z.array(z.any()),
   messageId: z.string(),
   projectRef: z.string(),
   orgSlug: z.string().optional(),
   reason: z.string().optional(),
-})
+}).passthrough()
 
 export async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   const authorization = req.headers.authorization
